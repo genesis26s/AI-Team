@@ -1,0 +1,9 @@
+google-genai
+openai
+python-dotenv
+aiohttp
+requests
+pydantic
+rich
+PyYAML
+typing-extensions
