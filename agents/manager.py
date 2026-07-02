@@ -25,29 +25,52 @@ Available agents:
 """
         )
 
-    def delegate(self, prompt: str, registry):
+    def delegate(self, task, registry):
 
+        # Task object -> prompt string
+        prompt = task.prompt
         text = prompt.lower()
+
+        task.status = "processing"
+        task.log("Manager received task.")
 
         # Greetings
         if any(word in text for word in [
             "hello", "hi", "hey", "how are you"
         ]):
-            return self.chat(prompt)
+            response = self.chat(prompt)
+            task.final_output = response.text
+            task.status = "completed"
+            task.log("Handled as a normal conversation.")
+            return response
 
         # Review tasks
         if any(word in text for word in [
             "review", "bug", "debug", "fix"
         ]):
             reviewer = registry.get("reviewer")
-            return reviewer.chat(prompt)
+            response = reviewer.chat(prompt)
+
+            task.reviewer_output = response.text
+            task.final_output = response.text
+            task.status = "completed"
+            task.log("Sent directly to Reviewer.")
+
+            return response
 
         # Optimization tasks
         if any(word in text for word in [
             "optimize", "optimise", "performance"
         ]):
             optimizer = registry.get("optimizer")
-            return optimizer.chat(prompt)
+            response = optimizer.chat(prompt)
+
+            task.optimizer_output = response.text
+            task.final_output = response.text
+            task.status = "completed"
+            task.log("Sent directly to Optimizer.")
+
+            return response
 
         # Default workflow
         developer = registry.get("developer")
@@ -58,11 +81,15 @@ Available agents:
         print("Planning task...")
 
         dev = developer.chat(prompt)
+        task.developer_output = dev.text
+        task.log("Developer completed task.")
         print("✔ Developer finished")
 
         review = reviewer.chat(
             f"Review this solution:\n\n{dev.text}"
         )
+        task.reviewer_output = review.text
+        task.log("Reviewer completed review.")
         print("✔ Reviewer finished")
 
         optimized = optimizer.chat(
@@ -79,6 +106,13 @@ Reviewer feedback:
 {review.text}
 """
         )
+
+        task.optimizer_output = optimized.text
+        task.final_output = optimized.text
+        task.status = "completed"
+        task.log("Optimizer completed task.")
+        task.log("Task finished successfully.")
+
         print("✔ Optimizer finished")
 
         return optimized
