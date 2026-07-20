@@ -1,32 +1,43 @@
-import json
-from pathlib import Path
+from services.gateway_service import gateway
+
+from core.request import AIRequest
+from core.model_registry import ModelRegistry
 
 
-class ModelRegistry:
-    def __init__(self, path: str = "models.json"):
-        self.path = Path(path)
+class BaseAgent:
 
-        if not self.path.exists():
-            raise FileNotFoundError(
-                f"Model configuration file not found: {self.path}"
-            )
+    _registry = ModelRegistry()
 
-        with open(self.path, "r", encoding="utf-8") as f:
-            self.models = json.load(f)
+    def __init__(
+        self,
+        name: str,
+        system_prompt: str
+    ):
+        self.name = name.lower()
+        self.system_prompt = system_prompt
 
-    def get(self, agent_name: str) -> dict:
-        agent_name = agent_name.lower()
+        config = self._registry.get(self.name)
 
-        if agent_name not in self.models:
-            raise ValueError(
-                f"No model configuration found for '{agent_name}'."
-            )
+        self.provider = config["provider"]
+        self.model = config["model"]
 
-        return self.models[agent_name]
+        self.temperature = config.get("temperature", 0.7)
+        self.max_tokens = config.get("max_tokens", 4096)
 
-    def reload(self):
-        with open(self.path, "r", encoding="utf-8") as f:
-            self.models = json.load(f)
+        self.fallbacks = config.get("fallbacks", [])
 
-    def agents(self):
-        return list(self.models.keys())
+        self.gateway = gateway
+
+    def chat(self, prompt: str):
+
+        request = AIRequest(
+            prompt=prompt,
+            provider=self.provider,
+            model=self.model,
+            agent=self.name,
+            system_prompt=self.system_prompt,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+        )
+
+        return self.gateway.chat(request)
