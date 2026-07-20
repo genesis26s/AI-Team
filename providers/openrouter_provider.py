@@ -1,24 +1,17 @@
-from providers.base_provider import BaseProvider
+from config import OPENROUTER_API_KEY
 
-from core.request import AIRequest
-from core.response import AIResponse
+from providers.http_provider import HTTPProvider
 
 
-class OpenRouterProvider(BaseProvider):
+class OpenRouterProvider(HTTPProvider):
 
     name = "openrouter"
 
-    def chat(self, request: AIRequest):
+    BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-        return AIResponse(
-            success=False,
-            text="OpenRouter provider has not been implemented yet.",
-            provider=self.name,
-            model=request.model,
-        )
+    API_KEY = OPENROUTER_API_KEY
 
-    def health_check(self):
-        return True
+    DEFAULT_MODEL = "deepseek/deepseek-chat-v3"
 
     def available_models(self):
         return [
