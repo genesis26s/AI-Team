@@ -1,33 +1,32 @@
-from services.gateway_service import gateway
-from core.request import AIRequest
+import json
+from pathlib import Path
 
 
-class BaseAgent:
+class ModelRegistry:
+    def __init__(self, path: str = "models.json"):
+        self.path = Path(path)
 
-    def __init__(
-        self,
-        name: str,
-        system_prompt: str,
-        provider: str = "google",
-        model: str = "gemini-2.5-flash"
-    ):
+        if not self.path.exists():
+            raise FileNotFoundError(
+                f"Model configuration file not found: {self.path}"
+            )
 
-        self.name = name
-        self.system_prompt = system_prompt
+        with open(self.path, "r", encoding="utf-8") as f:
+            self.models = json.load(f)
 
-        self.provider = provider
-        self.model = model
+    def get(self, agent_name: str) -> dict:
+        agent_name = agent_name.lower()
 
-        self.gateway = gateway
+        if agent_name not in self.models:
+            raise ValueError(
+                f"No model configuration found for '{agent_name}'."
+            )
 
-    def chat(self, prompt: str):
+        return self.models[agent_name]
 
-        request = AIRequest(
-            prompt=prompt,
-            provider=self.provider,
-            model=self.model,
-            agent=self.name,
-            system_prompt=self.system_prompt
-        )
+    def reload(self):
+        with open(self.path, "r", encoding="utf-8") as f:
+            self.models = json.load(f)
 
-        return self.gateway.chat(request)
+    def agents(self):
+        return list(self.models.keys())
