@@ -5,8 +5,12 @@ from config import GOOGLE_API_KEY
 from core.request import AIRequest
 from core.response import AIResponse
 
+from providers.base_provider import BaseProvider
 
-class GoogleProvider:
+
+class GoogleProvider(BaseProvider):
+
+    name = "google"
 
     def __init__(self):
         self.client = genai.Client(api_key=GOOGLE_API_KEY)
@@ -31,6 +35,15 @@ class GoogleProvider:
         return AIResponse(
             success=True,
             text=response.text,
-            provider="google",
+            provider=self.name,
             model=request.model,
         )
+
+    def health_check(self):
+        return GOOGLE_API_KEY is not None
+
+    def available_models(self):
+        return [
+            "gemini-2.5-flash",
+            "gemini-2.5-pro",
+        ]
