@@ -1,27 +1,12 @@
-from providers.google_provider import GoogleProvider
+from providers.provider_factory import ProviderFactory
 
 from core.request import AIRequest
 
 
 class Gateway:
 
-    def __init__(self):
-
-        self.providers = {}
-
-        self.register(
-            "google",
-            GoogleProvider()
-        )
-
-    def register(self, name, provider):
-        self.providers[name] = provider
-
     def chat(self, request: AIRequest):
 
-        provider = self.providers.get(request.provider)
-
-        if provider is None:
-            raise Exception(f"Provider '{request.provider}' not found.")
+        provider = ProviderFactory.create(request.provider)
 
         return provider.chat(request)
