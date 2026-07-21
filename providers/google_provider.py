@@ -2,48 +2,117 @@ from google import genai
 
 from config import GOOGLE_API_KEY
 
+from providers.base_provider import BaseProvider
+
 from core.request import AIRequest
 from core.response import AIResponse
-
-from providers.base_provider import BaseProvider
+from core.model import AIModel
 
 
 class GoogleProvider(BaseProvider):
 
     name = "google"
 
+    DEFAULT_MODEL = "gemini-2.5-flash"
+
     def __init__(self):
-        self.client = genai.Client(api_key=GOOGLE_API_KEY)
+
+        self.client = genai.Client(
+            api_key=GOOGLE_API_KEY
+        )
+
+    # --------------------------------------------------
 
     def chat(self, request: AIRequest):
 
-        prompt = request.prompt
+        try:
 
-        if request.system_prompt:
-            prompt = (
-                f"System Instructions:\n"
-                f"{request.system_prompt}\n\n"
-                f"User Request:\n"
-                f"{request.prompt}"
+            response = self.client.models.generate_content(
+                model=request.model or self.DEFAULT_MODEL,
+                contents=request.prompt,
             )
 
-        response = self.client.models.generate_content(
-            model=request.model,
-            contents=prompt,
-        )
+            return AIResponse(
+                success=True,
+                text=response.text,
+                provider=self.name,
+                model=request.model or self.DEFAULT_MODEL,
+            )
 
-        return AIResponse(
-            success=True,
-            text=response.text,
-            provider=self.name,
-            model=request.model,
-        )
+        except Exception as e:
 
-    def health_check(self):
-        return GOOGLE_API_KEY is not None
+            return AIResponse(
+                success=False,
+                text=str(e),
+                provider=self.name,
+                model=request.model or self.DEFAULT_MODEL,
+            )
+
+    # --------------------------------------------------
 
     def available_models(self):
-        return [
-            "gemini-2.5-flash",
-            "gemini-2.5-pro",
-        ]
+
+        models = []
+
+        try:
+
+            for model in self.client.models.list():
+
+                model_name = model.name.replace("models/", "")
+
+                models.append(
+
+                    AIModel(
+
+                        id=model_name,
+
+                        name=model.display_name or model_name,
+
+                        provider=self.name,
+
+                        free=True,
+
+                        context=getattr(
+                            model,
+                            "input_token_limit",
+                            None,
+                        ),
+
+                        capabilities=["chat"],
+
+                        reasoning="gemini" in model_name.lower(),
+
+                        coding="gemini" in model_name.lower(),
+
+                        vision="vision" in model_name.lower()
+                        or "image" in model_name.lower(),
+
+                        description=getattr(
+                            model,
+                            "description",
+                            "",
+                        ),
+
+                    )
+
+                )
+
+        except Exception as e:
+
+            print(f"Google: {e}")
+
+        return models
+
+    # --------------------------------------------------
+
+    def health_check(self):
+
+        try:
+
+            self.client.models.list()
+
+            return True
+
+        except Exception:
+
+            return False
