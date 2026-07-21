@@ -1,10 +1,12 @@
 from providers.provider_factory import factory
 from registry.model_registry import registry
 
+from core.model import AIModel
+
 
 class RegistryLoader:
     """
-    Loads all available models from every provider into the registry.
+    Loads every provider's models into the registry.
     """
 
     def load(self):
@@ -32,14 +34,20 @@ class RegistryLoader:
                     print("  No models found.\n")
                     continue
 
+                loaded = 0
+
                 for model in models:
 
-                    registry.register_model(
-                        provider_name,
-                        model
-                    )
+                    if isinstance(model, AIModel):
 
-                print(f"  Loaded {len(models)} model(s).\n")
+                        registry.register_model(
+                            provider_name,
+                            model
+                        )
+
+                        loaded += 1
+
+                print(f"  Loaded {loaded} model(s).\n")
 
             except Exception as e:
 
