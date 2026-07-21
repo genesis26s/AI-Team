@@ -21,6 +21,7 @@ class HelpMenu:
             ("/providers", "List available providers"),
             ("/models", "Show discovered models"),
             ("/free-models", "Show verified free models"),
+            ("/refresh-models", "Refresh the model registry"),
             ("/agents", "List all AI agents"),
             ("/health", "Show system health"),
             ("/diagnostics", "Run diagnostics"),
@@ -33,7 +34,7 @@ class HelpMenu:
         for command, description in commands:
 
             print(
-                Colors.color(f"{command:<20}", Colors.BRIGHT_GREEN)
+                Colors.color(f"{command:<22}", Colors.BRIGHT_GREEN)
                 + description
             )
 
