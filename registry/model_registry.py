@@ -1,65 +1,125 @@
-import json
-from pathlib import Path
+from core.model import AIModel
 
 
 class ModelRegistry:
+    """
+    Stores every discovered model from every provider.
+    """
 
     def __init__(self):
 
+        self.providers = set()
+
         self.models = {}
 
-    def register_provider(self, provider_name):
-
-        if provider_name not in self.models:
-            self.models[provider_name] = []
-
-    def register_model(self, provider_name, model):
-
-        self.register_provider(provider_name)
-
-        if model not in self.models[provider_name]:
-            self.models[provider_name].append(model)
-
-    def get_models(self, provider_name=None):
-
-        if provider_name is None:
-            return self.models
-
-        return self.models.get(provider_name, [])
-
-    def provider_count(self):
-
-        return len(self.models)
-
-    def model_count(self):
-
-        total = 0
-
-        for models in self.models.values():
-            total += len(models)
-
-        return total
+    # --------------------------------------------------
 
     def clear(self):
 
+        self.providers.clear()
         self.models.clear()
 
-    def save(self, filename="registry/free_models.json"):
+    # --------------------------------------------------
 
-        Path(filename).parent.mkdir(parents=True, exist_ok=True)
+    def register_provider(self, provider: str):
 
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(self.models, f, indent=4)
+        self.providers.add(provider)
 
-    def load(self, filename="registry/free_models.json"):
+        self.models.setdefault(provider, [])
 
-        path = Path(filename)
+    # --------------------------------------------------
 
-        if not path.exists():
-            return
+    def register_model(
+        self,
+        provider: str,
+        model: AIModel
+    ):
 
-        with open(path, "r", encoding="utf-8") as f:
-            self.models = json.load(f)
+        self.models.setdefault(provider, [])
+
+        self.models[provider].append(model)
+
+    # --------------------------------------------------
+
+    def get_models(self):
+
+        return self.models
+
+    # --------------------------------------------------
+
+    def get_provider_models(
+        self,
+        provider: str
+    ):
+
+        return self.models.get(provider, [])
+
+    # --------------------------------------------------
+
+    def provider_count(self):
+
+        return len(self.providers)
+
+    # --------------------------------------------------
+
+    def model_count(self):
+
+        return sum(
+            len(models)
+            for models in self.models.values()
+        )
+
+    # --------------------------------------------------
+
+    def all_models(self):
+
+        models = []
+
+        for provider_models in self.models.values():
+
+            models.extend(provider_models)
+
+        return models
+
+    # --------------------------------------------------
+
+    def free_models(self):
+
+        return [
+            model
+            for model in self.all_models()
+            if model.free
+        ]
+
+    # --------------------------------------------------
+
+    def coding_models(self):
+
+        return [
+            model
+            for model in self.all_models()
+            if model.coding
+        ]
+
+    # --------------------------------------------------
+
+    def reasoning_models(self):
+
+        return [
+            model
+            for model in self.all_models()
+            if model.reasoning
+        ]
+
+    # --------------------------------------------------
+
+    def vision_models(self):
+
+        return [
+            model
+            for model in self.all_models()
+            if model.vision
+        ]
 
 
 registry = ModelRegistry()
