@@ -1,10 +1,18 @@
+import os
+
+from cli.help import HelpMenu
+
 from registry.model_registry import registry
+from registry.registry_loader import loader
+from registry.registry_cache import cache
 from registry.registry_filter import registry_filter
+
+from core.version import VERSION
 
 
 class CommandHandler:
     """
-    Handles all CLI commands.
+    Handles all AI-Team CLI commands.
     """
 
     def execute(self, command, args=None):
@@ -26,6 +34,9 @@ class CommandHandler:
             case "free-models":
                 self.free_models()
 
+            case "refresh-models":
+                self.refresh_models()
+
             case "agents":
                 self.agents()
 
@@ -35,31 +46,22 @@ class CommandHandler:
             case "diagnostics":
                 self.diagnostics()
 
-            case "clear":
-                self.clear()
-
             case "version":
                 self.version()
 
+            case "clear":
+                self.clear()
+
             case _:
-                print(f"Unknown command: /{command}")
+                print(f"\nUnknown command: /{command}\n")
+
+    # ----------------------------------------
 
     def help(self):
 
-        print("\n========== Commands ==========")
+        HelpMenu.show()
 
-        print("/help              Show this menu")
-        print("/providers         List providers")
-        print("/models            Show all models")
-        print("/free-models       Show free models")
-        print("/agents            List AI agents")
-        print("/health            System health")
-        print("/diagnostics       Run diagnostics")
-        print("/version           Show version")
-        print("/clear             Clear terminal")
-        print("/exit              Exit AI-Team")
-
-        print()
+    # ----------------------------------------
 
     def providers(self):
 
@@ -68,13 +70,17 @@ class CommandHandler:
         providers = registry_filter.providers(registry)
 
         if not providers:
+
             print("No providers loaded.\n")
             return
 
         for provider in providers:
+
             print(f"• {provider}")
 
         print()
+
+    # ----------------------------------------
 
     def models(self):
 
@@ -83,6 +89,7 @@ class CommandHandler:
         models = registry.get_models()
 
         if not models:
+
             print("No models loaded.\n")
             return
 
@@ -91,15 +98,43 @@ class CommandHandler:
             print(provider)
 
             for model in provider_models:
+
                 print(f"   • {model}")
 
             print()
+
+    # ----------------------------------------
 
     def free_models(self):
 
         print("\n========== Free Models ==========\n")
 
         self.models()
+
+    # ----------------------------------------
+
+    def refresh_models(self):
+
+        print()
+
+        print("Refreshing Model Registry...\n")
+
+        registry.clear()
+
+        loader.load()
+
+        cache.save()
+
+        print()
+
+        print("Registry updated successfully.")
+
+        print(f"Providers : {registry.provider_count()}")
+        print(f"Models    : {registry.model_count()}")
+
+        print()
+
+    # ----------------------------------------
 
     def agents(self):
 
@@ -113,15 +148,19 @@ class CommandHandler:
 
         print()
 
+    # ----------------------------------------
+
     def health(self):
 
         print("\n========== Health ==========\n")
 
-        print("Registry : OK")
-        print(f"Providers: {registry.provider_count()}")
-        print(f"Models   : {registry.model_count()}")
+        print("Registry  : OK")
+        print(f"Providers : {registry.provider_count()}")
+        print(f"Models    : {registry.model_count()}")
 
         print()
+
+    # ----------------------------------------
 
     def diagnostics(self):
 
@@ -132,13 +171,15 @@ class CommandHandler:
 
         print()
 
+    # ----------------------------------------
+
     def version(self):
 
-        print("\nAI-Team v0.3.0-alpha\n")
+        print(f"\nAI-Team {VERSION}\n")
+
+    # ----------------------------------------
 
     def clear(self):
-
-        import os
 
         os.system("cls" if os.name == "nt" else "clear")
 
