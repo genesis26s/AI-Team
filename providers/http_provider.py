@@ -9,12 +9,6 @@ from core.response import AIResponse
 class HTTPProvider(BaseProvider):
     """
     Base class for providers that expose an OpenAI-compatible HTTP API.
-
-    Child classes should override:
-        - BASE_URL
-        - API_KEY
-        - DEFAULT_MODEL (optional)
-        - HEADERS (optional)
     """
 
     BASE_URL = ""
@@ -22,6 +16,13 @@ class HTTPProvider(BaseProvider):
     DEFAULT_MODEL = ""
 
     def headers(self):
+
+        print("=" * 60)
+        print(f"Provider : {self.name}")
+        print(f"Base URL : {self.BASE_URL}")
+        print(f"API Key  : {repr(self.API_KEY)}")
+        print("=" * 60)
+
         return {
             "Authorization": f"Bearer {self.API_KEY}",
             "Content-Type": "application/json",
@@ -32,15 +33,19 @@ class HTTPProvider(BaseProvider):
         messages = []
 
         if request.system_prompt:
-            messages.append({
-                "role": "system",
-                "content": request.system_prompt
-            })
+            messages.append(
+                {
+                    "role": "system",
+                    "content": request.system_prompt,
+                }
+            )
 
-        messages.append({
-            "role": "user",
-            "content": request.prompt
-        })
+        messages.append(
+            {
+                "role": "user",
+                "content": request.prompt,
+            }
+        )
 
         return {
             "model": request.model or self.DEFAULT_MODEL,
@@ -51,7 +56,12 @@ class HTTPProvider(BaseProvider):
 
     def parse_response(self, response_json):
 
-        return response_json["choices"][0]["message"]["content"]
+        choices = response_json.get("choices", [])
+
+        if not choices:
+            raise ValueError("Provider returned no choices.")
+
+        return choices[0]["message"]["content"]
 
     def chat(self, request: AIRequest):
 
@@ -63,6 +73,10 @@ class HTTPProvider(BaseProvider):
                 json=self.build_payload(request),
                 timeout=60,
             )
+
+            print("\nStatus Code:", response.status_code)
+            print("Response:", response.text)
+            print()
 
             response.raise_for_status()
 
@@ -86,7 +100,7 @@ class HTTPProvider(BaseProvider):
                 model=request.model,
             )
 
-        except requests.HTTPError as e:
+        except requests.HTTPError:
 
             try:
                 error = response.json()
@@ -110,9 +124,7 @@ class HTTPProvider(BaseProvider):
             )
 
     def health_check(self):
-
         return bool(self.API_KEY)
 
     def available_models(self):
-
         return []
