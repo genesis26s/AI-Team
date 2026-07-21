@@ -1,12 +1,13 @@
-from providers.provider_factory import ProviderFactory
-
-from core.request import AIRequest
+from providers.provider_factory import factory
 
 
 class Gateway:
 
-    def chat(self, request: AIRequest):
+    def chat(self, request):
 
-        provider = ProviderFactory.create(request.provider)
+        provider = factory.get(request.provider)
 
         return provider.chat(request)
+
+
+gateway = Gateway()
