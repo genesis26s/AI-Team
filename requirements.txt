@@ -7,3 +7,4 @@ pydantic
 rich
 PyYAML
 typing-extensions
+huggingface_hub
