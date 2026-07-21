@@ -16,13 +16,6 @@ class HTTPProvider(BaseProvider):
     DEFAULT_MODEL = ""
 
     def headers(self):
-
-        print("=" * 60)
-        print(f"Provider : {self.name}")
-        print(f"Base URL : {self.BASE_URL}")
-        print(f"API Key  : {repr(self.API_KEY)}")
-        print("=" * 60)
-
         return {
             "Authorization": f"Bearer {self.API_KEY}",
             "Content-Type": "application/json",
@@ -33,19 +26,15 @@ class HTTPProvider(BaseProvider):
         messages = []
 
         if request.system_prompt:
-            messages.append(
-                {
-                    "role": "system",
-                    "content": request.system_prompt,
-                }
-            )
+            messages.append({
+                "role": "system",
+                "content": request.system_prompt
+            })
 
-        messages.append(
-            {
-                "role": "user",
-                "content": request.prompt,
-            }
-        )
+        messages.append({
+            "role": "user",
+            "content": request.prompt
+        })
 
         return {
             "model": request.model or self.DEFAULT_MODEL,
@@ -73,10 +62,6 @@ class HTTPProvider(BaseProvider):
                 json=self.build_payload(request),
                 timeout=60,
             )
-
-            print("\nStatus Code:", response.status_code)
-            print("Response:", response.text)
-            print()
 
             response.raise_for_status()
 
