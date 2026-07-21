@@ -1,33 +1,41 @@
 from providers.google_provider import GoogleProvider
 from providers.openrouter_provider import OpenRouterProvider
-from providers.cerebras_provider import CerebrasProvider
+from providers.github_provider import GitHubProvider
+from providers.huggingface_provider import HuggingFaceProvider
 
 
 class ProviderFactory:
 
-    _providers = {
-        "google": GoogleProvider,
-        "openrouter": OpenRouterProvider,
-        "cerebras": CerebrasProvider,
-    }
+    def __init__(self):
 
-    @classmethod
-    def create(cls, provider_name: str):
+        self.providers = {
+            "google": GoogleProvider(),
+            "openrouter": OpenRouterProvider(),
+            "github": GitHubProvider(),
+            "huggingface": HuggingFaceProvider(),
+        }
 
-        provider_name = provider_name.lower()
+    def get(self, provider_name: str):
 
-        if provider_name not in cls._providers:
-            raise ValueError(
-                f"Unknown provider '{provider_name}'. "
-                f"Available providers: {list(cls._providers.keys())}"
-            )
+        provider = self.providers.get(provider_name.lower())
 
-        return cls._providers[provider_name]()
+        if provider is None:
+            raise ValueError(f"Unknown provider: {provider_name}")
 
-    @classmethod
-    def register(cls, name, provider):
-        cls._providers[name.lower()] = provider
+        return provider
 
-    @classmethod
-    def available(cls):
-        return list(cls._providers.keys())
+    def available_providers(self):
+
+        return list(self.providers.keys())
+
+    def health(self):
+
+        status = {}
+
+        for name, provider in self.providers.items():
+            status[name] = provider.health_check()
+
+        return status
+
+
+factory = ProviderFactory()
