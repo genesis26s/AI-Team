@@ -7,7 +7,7 @@ class GitHubProvider(HTTPProvider):
 
     name = "github"
 
-    BASE_URL = "https://models.inference.ai.azure.com/chat/completions"
+    BASE_URL = "https://models.github.ai/inference/chat/completions"
 
     API_KEY = GITHUB_MODELS_API_KEY
 
