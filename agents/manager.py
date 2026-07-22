@@ -38,6 +38,8 @@ execution cost and latency.
 
         )
 
+    # --------------------------------------------------
+
     def delegate(self, task, registry):
 
         print("\n🧠 Manager")
@@ -47,16 +49,34 @@ execution cost and latency.
         reviewer = registry.get("reviewer")
         optimizer = registry.get("optimizer")
 
-        response = developer.chat(task)
+        # ----------------------------
+        # Developer
+        # ----------------------------
+
+        dev_response = developer.chat(task)
 
         print("✓ Developer finished")
 
-        response = reviewer.chat(response)
+        if not dev_response.success:
+            return dev_response
+
+        # ----------------------------
+        # Reviewer
+        # ----------------------------
+
+        review_response = reviewer.chat(dev_response.text)
 
         print("✓ Reviewer finished")
 
-        response = optimizer.chat(response)
+        if not review_response.success:
+            return review_response
+
+        # ----------------------------
+        # Optimizer
+        # ----------------------------
+
+        optimized_response = optimizer.chat(review_response.text)
 
         print("✓ Optimizer finished")
 
-        return response
+        return optimized_response
