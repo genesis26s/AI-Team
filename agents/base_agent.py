@@ -1,41 +1,57 @@
-from services.gateway_service import gateway
-from services.agent_config import agent_config
+from core.agent_role import AgentRole
+from core.model_strategy import ModelStrategy
+from core.task import Task
+from core.request import AIRequest
 
 from registry.model_registry import registry
 
-from core.request import AIRequest
-from core.task import Task
+from services.agent_config import agent_config
+from services.gateway_service import gateway
 
 
 class BaseAgent:
 
     def __init__(
         self,
-        name,
-        system_prompt=""
+        role: AgentRole,
+        system_prompt: str = "",
     ):
 
-        self.name = name.lower()
+        self.role = role
         self.system_prompt = system_prompt
 
     # --------------------------------------------------
 
     def chat(self, prompt):
 
-        config = agent_config.get(self.name)
+        # ----------------------------------------------
+        # Agent configuration
+        # ----------------------------------------------
 
-        strategy = config.get("strategy")
+        config = agent_config.get(self.role)
+
+        if config is None:
+
+            raise RuntimeError(
+                f"No configuration found for {self.role.value}."
+            )
+
+        # ----------------------------------------------
+        # Select model
+        # ----------------------------------------------
+
+        strategy: ModelStrategy = config["strategy"]
 
         model = registry.best(strategy)
 
         if model is None:
 
             raise RuntimeError(
-                f"No model found for strategy '{strategy}'."
+                f"No model found for strategy '{strategy.value}'."
             )
 
         # ----------------------------------------------
-        # Accept either a Task object or plain text
+        # Accept either Task or plain text
         # ----------------------------------------------
 
         if isinstance(prompt, Task):
@@ -46,6 +62,8 @@ class BaseAgent:
 
             prompt_text = str(prompt)
 
+        # ----------------------------------------------
+        # Build request
         # ----------------------------------------------
 
         request = AIRequest(
@@ -58,10 +76,28 @@ class BaseAgent:
 
             model=model.id,
 
+            agent=self.role.value,
+
             temperature=config.get("temperature", 0.7),
 
             max_tokens=config.get("max_tokens", 4096),
 
         )
 
+        # ----------------------------------------------
+        # Send request
+        # ----------------------------------------------
+
         return gateway.chat(request)
+
+    # --------------------------------------------------
+
+    @property
+    def name(self):
+
+        """
+        Backwards compatibility.
+        Remove this once every file uses self.role.
+        """
+
+        return self.role.value
