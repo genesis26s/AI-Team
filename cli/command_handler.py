@@ -5,7 +5,6 @@ from cli.help import HelpMenu
 from registry.model_registry import registry
 from registry.registry_loader import loader
 from registry.registry_cache import cache
-from registry.registry_filter import registry_filter
 
 from core.version import VERSION
 
@@ -67,7 +66,7 @@ class CommandHandler:
 
         print("\n========== Providers ==========\n")
 
-        providers = registry_filter.providers(registry)
+        providers = registry.get_providers()
 
         if not providers:
 
@@ -76,7 +75,7 @@ class CommandHandler:
 
         for provider in providers:
 
-            print(f"• {provider}")
+            print(f"• {provider.name}")
 
         print()
 
@@ -93,15 +92,17 @@ class CommandHandler:
             print("No models loaded.\n")
             return
 
-        for provider, provider_models in models.items():
+        for model in models:
 
-            print(provider)
+            status = "FREE" if getattr(model, "free", True) else "PAID"
 
-            for model in provider_models:
+            print(
+                f"{model.provider:<14}"
+                f"{model.name:<40}"
+                f"{status}"
+            )
 
-                print(f"   • {model}")
-
-            print()
+        print()
 
     # ----------------------------------------
 
@@ -109,14 +110,31 @@ class CommandHandler:
 
         print("\n========== Free Models ==========\n")
 
-        self.models()
+        models = [
+            model
+            for model in registry.get_models()
+            if getattr(model, "free", True)
+        ]
+
+        if not models:
+
+            print("No free models loaded.\n")
+            return
+
+        for model in models:
+
+            print(
+                f"{model.provider:<14}"
+                f"{model.name}"
+            )
+
+        print()
 
     # ----------------------------------------
 
     def refresh_models(self):
 
         print()
-
         print("Refreshing Model Registry...\n")
 
         registry.clear()
@@ -126,12 +144,9 @@ class CommandHandler:
         cache.save()
 
         print()
-
         print("Registry updated successfully.")
-
         print(f"Providers : {registry.provider_count()}")
         print(f"Models    : {registry.model_count()}")
-
         print()
 
     # ----------------------------------------
@@ -141,7 +156,6 @@ class CommandHandler:
         print("\n========== Agents ==========\n")
 
         print("🧠 Manager")
-        print("📋 Planner")
         print("💻 Developer")
         print("🔍 Reviewer")
         print("⚡ Optimizer")
