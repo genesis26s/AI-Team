@@ -8,13 +8,18 @@ from core.request import AIRequest
 
 class BaseAgent:
 
-    name = "base"
-
-    def chat(
+    def __init__(
         self,
-        prompt,
-        system_prompt=None,
+        name,
+        system_prompt=""
     ):
+
+        self.name = name.lower()
+        self.system_prompt = system_prompt
+
+    # --------------------------------------------------
+
+    def chat(self, prompt):
 
         config = agent_config.get(self.name)
 
@@ -25,14 +30,14 @@ class BaseAgent:
         if model is None:
 
             raise RuntimeError(
-                f"No model available for strategy '{strategy}'."
+                f"No model found for strategy '{strategy}'."
             )
 
         request = AIRequest(
 
             prompt=prompt,
 
-            system_prompt=system_prompt,
+            system_prompt=self.system_prompt,
 
             provider=model.provider,
 
