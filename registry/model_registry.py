@@ -6,12 +6,53 @@ class ModelRegistry:
     def __init__(self):
 
         self.models = []
+        self.providers = {}
+
+    # ==================================================
+    # Providers
+    # ==================================================
+
+    def register_provider(self, provider):
+
+        self.providers[provider.name.lower()] = provider
 
     # --------------------------------------------------
+
+    def get_provider(self, name):
+
+        return self.providers.get(name.lower())
+
+    # --------------------------------------------------
+
+    def get_providers(self):
+
+        return list(self.providers.values())
+
+    # --------------------------------------------------
+
+    def provider_names(self):
+
+        return list(self.providers.keys())
+
+    # --------------------------------------------------
+
+    def provider_count(self):
+
+        return len(self.providers)
+
+    # ==================================================
+    # Models
+    # ==================================================
 
     def register(self, model: AIModel):
 
         self.models.append(model)
+
+    # --------------------------------------------------
+
+    def register_model(self, model: AIModel):
+
+        self.register(model)
 
     # --------------------------------------------------
 
@@ -21,28 +62,21 @@ class ModelRegistry:
 
     # --------------------------------------------------
 
-    def all(self):
+    def clear_models(self):
+
+        self.models.clear()
+
+    # --------------------------------------------------
+
+    def get_models(self):
 
         return self.models
 
     # --------------------------------------------------
 
-    def providers(self):
+    def all(self):
 
-        return sorted(
-            list(
-                {
-                    model.provider
-                    for model in self.models
-                }
-            )
-        )
-
-    # --------------------------------------------------
-
-    def provider_count(self):
-
-        return len(self.providers())
+        return self.models
 
     # --------------------------------------------------
 
@@ -82,7 +116,9 @@ class ModelRegistry:
 
         return results
 
-    # --------------------------------------------------
+    # ==================================================
+    # Strategy Selection
+    # ==================================================
 
     def best(self, strategy):
 
@@ -116,11 +152,11 @@ class ModelRegistry:
 
             key=lambda model: (
 
-                not model.free,
+                not getattr(model, "free", True),
 
-                -(model.context or 0),
+                -(getattr(model, "context", 0) or 0),
 
-                model.name.lower(),
+                getattr(model, "name", "").lower(),
 
             )
 
@@ -151,6 +187,20 @@ class ModelRegistry:
     def best_chat(self):
 
         return self.best("best_chat")
+
+    # ==================================================
+    # Statistics
+    # ==================================================
+
+    def stats(self):
+
+        return {
+
+            "providers": self.provider_count(),
+
+            "models": self.model_count(),
+
+        }
 
 
 registry = ModelRegistry()
