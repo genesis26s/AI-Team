@@ -1,43 +1,47 @@
 from services.gateway_service import gateway
+from services.agent_config import agent_config
+
+from registry.model_registry import registry
 
 from core.request import AIRequest
-from core.model_registry import ModelRegistry
 
 
 class BaseAgent:
 
-    _registry = ModelRegistry()
+    name = "base"
 
-    def __init__(
+    def chat(
         self,
-        name: str,
-        system_prompt: str
+        prompt,
+        system_prompt=None,
     ):
-        self.name = name.lower()
-        self.system_prompt = system_prompt
 
-        config = self._registry.get(self.name)
+        config = agent_config.get(self.name)
 
-        self.provider = config["provider"]
-        self.model = config["model"]
+        strategy = config.get("strategy")
 
-        self.temperature = config.get("temperature", 0.7)
-        self.max_tokens = config.get("max_tokens", 4096)
+        model = registry.best(strategy)
 
-        self.fallbacks = config.get("fallbacks", [])
+        if model is None:
 
-        self.gateway = gateway
-
-    def chat(self, prompt: str):
+            raise RuntimeError(
+                f"No model available for strategy '{strategy}'."
+            )
 
         request = AIRequest(
+
             prompt=prompt,
-            provider=self.provider,
-            model=self.model,
-            agent=self.name,
-            system_prompt=self.system_prompt,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
+
+            system_prompt=system_prompt,
+
+            provider=model.provider,
+
+            model=model.id,
+
+            temperature=config.get("temperature", 0.7),
+
+            max_tokens=config.get("max_tokens", 4096),
+
         )
 
-        return self.gateway.chat(request)
+        return gateway.chat(request)
