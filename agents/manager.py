@@ -1,3 +1,5 @@
+from core.agent_role import AgentRole
+
 from agents.base_agent import BaseAgent
 
 
@@ -7,7 +9,7 @@ class Manager(BaseAgent):
 
         super().__init__(
 
-            name="manager",
+            role=AgentRole.MANAGER,
 
             system_prompt="""
 You are the Manager of AI-Team.
@@ -38,45 +40,4 @@ execution cost and latency.
 
         )
 
-    # --------------------------------------------------
-
-    def delegate(self, task, registry):
-
-        print("\n🧠 Manager")
-        print("Planning task...")
-
-        developer = registry.get("developer")
-        reviewer = registry.get("reviewer")
-        optimizer = registry.get("optimizer")
-
-        # ----------------------------
-        # Developer
-        # ----------------------------
-
-        dev_response = developer.chat(task)
-
-        print("✓ Developer finished")
-
-        if not dev_response.success:
-            return dev_response
-
-        # ----------------------------
-        # Reviewer
-        # ----------------------------
-
-        review_response = reviewer.chat(dev_response.text)
-
-        print("✓ Reviewer finished")
-
-        if not review_response.success:
-            return review_response
-
-        # ----------------------------
-        # Optimizer
-        # ----------------------------
-
-        optimized_response = optimizer.chat(review_response.text)
-
-        print("✓ Optimizer finished")
-
-        return optimized_response
+    # delegate() will be rewritten once Smart Routing is finished.
