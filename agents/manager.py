@@ -6,113 +6,57 @@ class Manager(BaseAgent):
     def __init__(self):
 
         super().__init__(
-            name="Manager",
+
+            name="manager",
+
             system_prompt="""
-You are the Project Manager of an AI software team.
+You are the Manager of AI-Team.
 
-You NEVER write production code yourself.
+AI-Team is a collaborative multi-agent AI framework.
 
-Your job is to:
-- Understand the user's request.
-- Decide which specialist agents should perform the work.
-- Coordinate the work.
-- Produce the final response.
+Your responsibility is to understand the user's request,
+coordinate specialist agents, combine their work, and produce
+one polished final response.
 
-Available agents:
-- Developer
-- Reviewer
-- Optimizer
+You are responsible for:
+
+• Understanding the task
+• Delegating work efficiently
+• Avoiding unnecessary API calls
+• Combining results
+• Ensuring the final answer is complete
+
+Never attempt specialist work yourself unless it is extremely
+simple.
+
+Always think like a technical project manager rather than a
+general AI assistant.
+
+Your goal is to maximize answer quality while minimizing
+execution cost and latency.
 """
+
         )
 
     def delegate(self, task, registry):
 
-        # Task object -> prompt string
-        prompt = task.prompt
-        text = prompt.lower()
+        print("\n🧠 Manager")
+        print("Planning task...")
 
-        task.status = "processing"
-        task.log("Manager received task.")
-
-        # Greetings
-        if any(word in text for word in [
-            "hello", "hi", "hey", "how are you"
-        ]):
-            response = self.chat(prompt)
-            task.final_output = response.text
-            task.status = "completed"
-            task.log("Handled as a normal conversation.")
-            return response
-
-        # Review tasks
-        if any(word in text for word in [
-            "review", "bug", "debug", "fix"
-        ]):
-            reviewer = registry.get("reviewer")
-            response = reviewer.chat(prompt)
-
-            task.reviewer_output = response.text
-            task.final_output = response.text
-            task.status = "completed"
-            task.log("Sent directly to Reviewer.")
-
-            return response
-
-        # Optimization tasks
-        if any(word in text for word in [
-            "optimize", "optimise", "performance"
-        ]):
-            optimizer = registry.get("optimizer")
-            response = optimizer.chat(prompt)
-
-            task.optimizer_output = response.text
-            task.final_output = response.text
-            task.status = "completed"
-            task.log("Sent directly to Optimizer.")
-
-            return response
-
-        # Default workflow
         developer = registry.get("developer")
         reviewer = registry.get("reviewer")
         optimizer = registry.get("optimizer")
 
-        print("\n🧠 Manager")
-        print("Planning task...")
+        response = developer.chat(task)
 
-        dev = developer.chat(prompt)
-        task.developer_output = dev.text
-        task.log("Developer completed task.")
-        print("✔ Developer finished")
+        print("✓ Developer finished")
 
-        review = reviewer.chat(
-            f"Review this solution:\n\n{dev.text}"
-        )
-        task.reviewer_output = review.text
-        task.log("Reviewer completed review.")
-        print("✔ Reviewer finished")
+        response = reviewer.chat(response)
 
-        optimized = optimizer.chat(
-            f"""
-Improve this solution while preserving functionality.
+        print("✓ Reviewer finished")
 
-Original user request:
-{prompt}
+        response = optimizer.chat(response)
 
-Developer solution:
-{dev.text}
+        print("✓ Optimizer finished")
 
-Reviewer feedback:
-{review.text}
-"""
-        )
-
-        task.optimizer_output = optimized.text
-        task.final_output = optimized.text
-        task.status = "completed"
-        task.log("Optimizer completed task.")
-        task.log("Task finished successfully.")
-
-        print("✔ Optimizer finished")
-
-        return optimized
+        return response
