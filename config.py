@@ -20,8 +20,34 @@ HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 # API Base URLs
 # ==================================================
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_BASE_URL = (
+    "https://openrouter.ai/api/v1/chat/completions"
+)
 
-GITHUB_BASE_URL = "https://models.github.ai/inference/chat/completions"
+GITHUB_BASE_URL = (
+    "https://models.github.ai/inference/chat/completions"
+)
 
-HUGGINGFACE_BASE_URL = "https://router.huggingface.co/v1/chat/completions"
+HUGGINGFACE_BASE_URL = (
+    "https://router.huggingface.co/v1/chat/completions"
+)
+
+# ==================================================
+# Enabled Providers
+# ==================================================
+
+ENABLE_GOOGLE = (
+    os.getenv("ENABLE_GOOGLE", "false").lower() == "true"
+)
+
+ENABLE_OPENROUTER = (
+    os.getenv("ENABLE_OPENROUTER", "true").lower() == "true"
+)
+
+ENABLE_GITHUB = (
+    os.getenv("ENABLE_GITHUB", "true").lower() == "true"
+)
+
+ENABLE_HUGGINGFACE = (
+    os.getenv("ENABLE_HUGGINGFACE", "true").lower() == "true"
+)
