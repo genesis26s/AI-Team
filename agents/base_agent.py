@@ -4,6 +4,7 @@ from services.agent_config import agent_config
 from registry.model_registry import registry
 
 from core.request import AIRequest
+from core.task import Task
 
 
 class BaseAgent:
@@ -33,9 +34,23 @@ class BaseAgent:
                 f"No model found for strategy '{strategy}'."
             )
 
+        # ----------------------------------------------
+        # Accept either a Task object or plain text
+        # ----------------------------------------------
+
+        if isinstance(prompt, Task):
+
+            prompt_text = prompt.prompt
+
+        else:
+
+            prompt_text = str(prompt)
+
+        # ----------------------------------------------
+
         request = AIRequest(
 
-            prompt=prompt,
+            prompt=prompt_text,
 
             system_prompt=self.system_prompt,
 
