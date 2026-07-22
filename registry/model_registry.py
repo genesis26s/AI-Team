@@ -1,4 +1,5 @@
 from core.model import AIModel
+from core.model_strategy import ModelStrategy
 
 
 class ModelRegistry:
@@ -120,25 +121,35 @@ class ModelRegistry:
     # Strategy Selection
     # ==================================================
 
-    def best(self, strategy):
+    def best(self, strategy: ModelStrategy):
 
-        strategy = strategy.lower()
-
-        if strategy == "best_coding":
+        if strategy == ModelStrategy.CODING:
 
             models = self.filter(coding=True)
 
-        elif strategy == "best_reasoning":
+        elif strategy == ModelStrategy.REASONING:
 
             models = self.filter(reasoning=True)
 
-        elif strategy == "best_vision":
+        elif strategy == ModelStrategy.VISION:
 
             models = self.filter(vision=True)
 
-        elif strategy == "best_chat":
+        elif strategy == ModelStrategy.CHAT:
 
             models = self.models
+
+        elif strategy == ModelStrategy.WRITING:
+
+            models = self.filter(reasoning=True)
+
+        elif strategy == ModelStrategy.MATH:
+
+            models = self.filter(reasoning=True)
+
+        elif strategy == ModelStrategy.THINKING:
+
+            models = self.filter(reasoning=True)
 
         else:
 
@@ -166,27 +177,27 @@ class ModelRegistry:
 
     # --------------------------------------------------
 
+    def best_chat(self):
+
+        return self.best(ModelStrategy.CHAT)
+
+    # --------------------------------------------------
+
     def best_coding(self):
 
-        return self.best("best_coding")
+        return self.best(ModelStrategy.CODING)
 
     # --------------------------------------------------
 
     def best_reasoning(self):
 
-        return self.best("best_reasoning")
+        return self.best(ModelStrategy.REASONING)
 
     # --------------------------------------------------
 
     def best_vision(self):
 
-        return self.best("best_vision")
-
-    # --------------------------------------------------
-
-    def best_chat(self):
-
-        return self.best("best_chat")
+        return self.best(ModelStrategy.VISION)
 
     # ==================================================
     # Statistics
