@@ -1,0 +1,31 @@
+{
+    "manager": {
+        "strategy": "best_reasoning",
+        "temperature": 0.4,
+        "max_tokens": 4096
+    },
+
+    "planner": {
+        "strategy": "best_reasoning",
+        "temperature": 0.5,
+        "max_tokens": 4096
+    },
+
+    "developer": {
+        "strategy": "best_coding",
+        "temperature": 0.2,
+        "max_tokens": 8192
+    },
+
+    "reviewer": {
+        "strategy": "best_reasoning",
+        "temperature": 0.2,
+        "max_tokens": 4096
+    },
+
+    "optimizer": {
+        "strategy": "best_reasoning",
+        "temperature": 0.3,
+        "max_tokens": 4096
+    }
+}
