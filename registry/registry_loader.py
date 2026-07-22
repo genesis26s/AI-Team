@@ -25,7 +25,8 @@ class RegistryLoader:
 
                 provider = factory.get(provider_name)
 
-                registry.register_provider(provider_name)
+                # Register the provider OBJECT
+                registry.register_provider(provider)
 
                 models = provider.available_models()
 
@@ -40,10 +41,8 @@ class RegistryLoader:
 
                     if isinstance(model, AIModel):
 
-                        registry.register_model(
-                            provider_name,
-                            model
-                        )
+                        # Register the AIModel only
+                        registry.register_model(model)
 
                         loaded += 1
 
