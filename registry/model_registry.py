@@ -2,124 +2,155 @@ from core.model import AIModel
 
 
 class ModelRegistry:
-    """
-    Stores every discovered model from every provider.
-    """
 
     def __init__(self):
 
-        self.providers = set()
+        self.models = []
 
-        self.models = {}
+    # --------------------------------------------------
+
+    def register(self, model: AIModel):
+
+        self.models.append(model)
 
     # --------------------------------------------------
 
     def clear(self):
 
-        self.providers.clear()
         self.models.clear()
 
     # --------------------------------------------------
 
-    def register_provider(self, provider: str):
-
-        self.providers.add(provider)
-
-        self.models.setdefault(provider, [])
-
-    # --------------------------------------------------
-
-    def register_model(
-        self,
-        provider: str,
-        model: AIModel
-    ):
-
-        self.models.setdefault(provider, [])
-
-        self.models[provider].append(model)
-
-    # --------------------------------------------------
-
-    def get_models(self):
+    def all(self):
 
         return self.models
 
     # --------------------------------------------------
 
-    def get_provider_models(
-        self,
-        provider: str
-    ):
+    def providers(self):
 
-        return self.models.get(provider, [])
+        return sorted(
+            list(
+                {
+                    model.provider
+                    for model in self.models
+                }
+            )
+        )
 
     # --------------------------------------------------
 
     def provider_count(self):
 
-        return len(self.providers)
+        return len(self.providers())
 
     # --------------------------------------------------
 
     def model_count(self):
 
-        return sum(
-            len(models)
-            for models in self.models.values()
+        return len(self.models)
+
+    # --------------------------------------------------
+
+    def find(self, model_id):
+
+        for model in self.models:
+
+            if model.id == model_id:
+
+                return model
+
+        return None
+
+    # --------------------------------------------------
+
+    def filter(self, **kwargs):
+
+        results = self.models
+
+        for key, value in kwargs.items():
+
+            results = [
+
+                model
+
+                for model in results
+
+                if getattr(model, key, None) == value
+
+            ]
+
+        return results
+
+    # --------------------------------------------------
+
+    def best(self, strategy):
+
+        strategy = strategy.lower()
+
+        if strategy == "best_coding":
+
+            models = self.filter(coding=True)
+
+        elif strategy == "best_reasoning":
+
+            models = self.filter(reasoning=True)
+
+        elif strategy == "best_vision":
+
+            models = self.filter(vision=True)
+
+        elif strategy == "best_chat":
+
+            models = self.models
+
+        else:
+
+            models = self.models
+
+        if not models:
+
+            return None
+
+        models.sort(
+
+            key=lambda model: (
+
+                not model.free,
+
+                -(model.context or 0),
+
+                model.name.lower(),
+
+            )
+
         )
 
-    # --------------------------------------------------
-
-    def all_models(self):
-
-        models = []
-
-        for provider_models in self.models.values():
-
-            models.extend(provider_models)
-
-        return models
+        return models[0]
 
     # --------------------------------------------------
 
-    def free_models(self):
+    def best_coding(self):
 
-        return [
-            model
-            for model in self.all_models()
-            if model.free
-        ]
+        return self.best("best_coding")
 
     # --------------------------------------------------
 
-    def coding_models(self):
+    def best_reasoning(self):
 
-        return [
-            model
-            for model in self.all_models()
-            if model.coding
-        ]
+        return self.best("best_reasoning")
 
     # --------------------------------------------------
 
-    def reasoning_models(self):
+    def best_vision(self):
 
-        return [
-            model
-            for model in self.all_models()
-            if model.reasoning
-        ]
+        return self.best("best_vision")
 
     # --------------------------------------------------
 
-    def vision_models(self):
+    def best_chat(self):
 
-        return [
-            model
-            for model in self.all_models()
-            if model.vision
-        ]
+        return self.best("best_chat")
 
 
 registry = ModelRegistry()
