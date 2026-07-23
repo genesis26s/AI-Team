@@ -5,11 +5,13 @@ class ModelStrategy(Enum):
 
     CHAT = "chat"
 
+    PLANNING = "planning"
+
     CODING = "coding"
 
     REASONING = "reasoning"
 
-    THINKING = "thinking"
+    RESEARCH = "research"
 
     WRITING = "writing"
 
