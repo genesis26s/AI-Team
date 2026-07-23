@@ -5,7 +5,7 @@ from core.agent_role import AgentRole
 from core.task_complexity import TaskComplexity
 
 
-@dataclass
+@dataclass(frozen=True)
 class ExecutionPlan:
 
     # ==========================================
@@ -13,6 +13,8 @@ class ExecutionPlan:
     # ==========================================
 
     task_type: str
+
+    intent: str
 
     confidence: int
 
@@ -27,7 +29,7 @@ class ExecutionPlan:
     pipeline: List[AgentRole] = field(default_factory=list)
 
     # ==========================================
-    # Model Preferences
+    # Model Selection
     # ==========================================
 
     preferred_traits: Dict[str, int] = field(default_factory=dict)
@@ -45,15 +47,22 @@ class ExecutionPlan:
     # ==========================================
 
     @property
-    def requires_pipeline(self):
+    def requires_pipeline(self) -> bool:
 
         return len(self.pipeline) > 0
 
-    def summary(self):
+    @property
+    def pipeline_names(self) -> List[str]:
+
+        return [agent.value for agent in self.pipeline]
+
+    def summary(self) -> dict:
 
         return {
 
             "task_type": self.task_type,
+
+            "intent": self.intent,
 
             "confidence": self.confidence,
 
@@ -61,13 +70,7 @@ class ExecutionPlan:
 
             "manager_can_answer": self.manager_can_answer,
 
-            "pipeline": [
-
-                role.value
-
-                for role in self.pipeline
-
-            ],
+            "pipeline": self.pipeline_names,
 
             "preferred_traits": self.preferred_traits,
 
@@ -76,3 +79,14 @@ class ExecutionPlan:
             "notes": self.notes,
 
         }
+
+    def __str__(self):
+
+        return (
+            f"ExecutionPlan("
+            f"task_type={self.task_type}, "
+            f"intent={self.intent}, "
+            f"complexity={self.complexity.value}, "
+            f"confidence={self.confidence}, "
+            f"pipeline={self.pipeline_names})"
+        )
