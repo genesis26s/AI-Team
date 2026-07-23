@@ -4,6 +4,7 @@ from cli.command_handler import handler
 
 from services.agent_registry import registry
 
+from core.agent_role import AgentRole
 from core.task import Task
 
 
@@ -13,8 +14,23 @@ class Console:
     """
 
     def __init__(self):
+        pass
 
-        self.manager = registry.get("manager")
+    # --------------------------------------------------
+
+    def get_manager(self):
+
+        manager = registry.get(AgentRole.MANAGER)
+
+        if manager is None:
+
+            raise RuntimeError(
+                "Manager agent is not registered."
+            )
+
+        return manager
+
+    # --------------------------------------------------
 
     def start(self):
 
@@ -30,28 +46,60 @@ class Console:
                     continue
 
                 if user_input.lower() in ("exit", "/exit"):
+
                     print("\nGoodbye!\n")
+
                     break
 
                 parsed = parser.parse(user_input)
 
+                # ------------------------------------------
+                # Commands
+                # ------------------------------------------
+
                 if parsed["type"] == "command":
 
                     handler.execute(
+
                         parsed["command"],
-                        parsed["args"]
+
+                        parsed["args"],
+
                     )
 
                     continue
 
+                # ------------------------------------------
+                # Build Task
+                # ------------------------------------------
+
                 task = Task(
+
                     prompt=parsed["input"]
+
                 )
 
-                response = self.manager.delegate(
+                # ------------------------------------------
+                # Get current manager
+                # ------------------------------------------
+
+                manager = self.get_manager()
+
+                # ------------------------------------------
+                # Delegate
+                # ------------------------------------------
+
+                response = manager.delegate(
+
                     task,
-                    registry
+
+                    registry,
+
                 )
+
+                # ------------------------------------------
+                # Output
+                # ------------------------------------------
 
                 print()
                 print("=" * 50)
@@ -66,6 +114,7 @@ class Console:
             except KeyboardInterrupt:
 
                 print("\n\nGoodbye!\n")
+
                 break
 
             except Exception as e:
