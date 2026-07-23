@@ -2,8 +2,8 @@ from core.agent_role import AgentRole
 
 from agents.base_agent import BaseAgent
 
-from services.router import router
-from services.pipeline_builder import pipeline_builder
+from planning.engine import planning_engine
+
 from services.pipeline_executor import pipeline_executor
 
 
@@ -18,71 +18,104 @@ class Manager(BaseAgent):
             system_prompt="""
 You are the Manager of AI-Team.
 
-AI-Team is a collaborative multi-agent AI framework.
+AI-Team is a modular multi-agent AI orchestration framework.
 
-Your responsibility is to understand the user's request,
-coordinate specialist agents,
-and produce the best possible response.
+You are NOT the smartest specialist.
 
-Never perform specialist work yourself unless the task is
-simple enough to answer directly.
+You are the coordinator.
+
+Your responsibility is to understand the user's request, create the best possible execution strategy, coordinate specialist agents, and deliver a polished final response.
+
+==================================================
+YOUR RESPONSIBILITIES
+==================================================
+
+• Understand the user's real intent.
+• Coordinate specialist agents when necessary.
+• Minimize unnecessary work.
+• Ensure high-quality responses.
+• Maintain consistency between agents.
+• Present the final answer to the user.
+
+==================================================
+YOUR ROLE
+==================================================
+
+You are the leader of AI-Team.
+
+You do not specialize in coding, research, writing, design, planning, mathematics, or any other domain.
+
+Instead, you determine WHEN specialists should be involved.
+
+When no specialist is required, answer the user directly.
+
+When specialists are required, coordinate their work and present the final polished result.
+
+==================================================
+YOUR PRIORITIES
+==================================================
+
+1. Correctness
+2. Quality
+3. User Satisfaction
+4. Efficiency
+5. Cost Optimization
 
 Always minimize unnecessary API calls.
 
-Think like an orchestration engine.
+Never execute more agents than required.
+
+==================================================
+COMMUNICATION STYLE
+==================================================
+
+Be professional.
+
+Be concise.
+
+Be confident.
+
+Never expose internal reasoning.
+
+Speak naturally as if AI-Team is one intelligent assistant.
 """
 
         )
 
     # --------------------------------------------------
 
-    def delegate(self, task, registry):
+    def delegate(self, task):
 
-        print("\n🧠 Manager")
-        print("Analyzing task...")
+        print("\n🧠 Planning Engine")
 
-        # ------------------------------------------
-        # Classify task
-        # ------------------------------------------
+        plan = planning_engine.plan(task)
 
-        task_type = router.classify(task)
+        print(f"Task Type      : {plan.task_type}")
+        print(f"Intent         : {plan.intent}")
+        print(f"Complexity     : {plan.complexity.value}")
+        print(f"Confidence     : {plan.confidence}%")
 
-        print(f"Task Type : {task_type.value}")
+        print("\nExecution Plan")
 
-        # ------------------------------------------
-        # Build pipeline
-        # ------------------------------------------
+        if plan.requires_pipeline:
 
-        pipeline = pipeline_builder.build(task_type)
+            for role in plan.pipeline:
 
-        # ------------------------------------------
-        # No pipeline needed
-        # ------------------------------------------
+                print(f"• {role.value.title()}")
 
-        if not pipeline:
+        else:
 
-            print("No specialist pipeline required.\n")
+            print("• No pipeline required")
 
-            return self.chat(task)
+        if plan.manager_can_answer:
 
-        print("Pipeline:")
+            print("\nManager Response : Direct")
 
-        for role in pipeline:
+            return self.chat(task.prompt)
 
-            print(f" • {role.value}")
-
-        print()
-
-        # ------------------------------------------
-        # Execute pipeline
-        # ------------------------------------------
+        print("\nManager Response : Pipeline")
 
         return pipeline_executor.execute(
-
-            task=task,
-
-            pipeline=pipeline,
-
-            registry=registry,
-
+            plan,
+            task,
         )
