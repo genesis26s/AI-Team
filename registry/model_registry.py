@@ -121,58 +121,66 @@ class ModelRegistry:
     # Strategy Selection
     # ==================================================
 
- def best(self, strategy: ModelStrategy):
+    def best(self, strategy: ModelStrategy):
 
-    if strategy == ModelStrategy.PLANNING:
+        if strategy == ModelStrategy.PLANNING:
 
-        models = self.filter(reasoning=True)
+            models = self.filter(reasoning=True)
 
-    elif strategy == ModelStrategy.CODING:
+        elif strategy == ModelStrategy.CODING:
 
-        models = self.filter(coding=True)
+            models = self.filter(coding=True)
 
-    elif strategy == ModelStrategy.REASONING:
+        elif strategy == ModelStrategy.REASONING:
 
-        models = self.filter(reasoning=True)
+            models = self.filter(reasoning=True)
 
-    elif strategy == ModelStrategy.RESEARCH:
+        elif strategy == ModelStrategy.RESEARCH:
 
-        models = self.filter(reasoning=True)
+            models = self.filter(reasoning=True)
 
-    elif strategy == ModelStrategy.WRITING:
+        elif strategy == ModelStrategy.WRITING:
 
-        models = self.filter(reasoning=True)
+            models = self.filter(reasoning=True)
 
-    elif strategy == ModelStrategy.MATH:
+        elif strategy == ModelStrategy.MATH:
 
-        models = self.filter(reasoning=True)
+            models = self.filter(reasoning=True)
 
-    elif strategy == ModelStrategy.VISION:
+        elif strategy == ModelStrategy.VISION:
 
-        models = self.filter(vision=True)
+            models = self.filter(vision=True)
 
-    elif strategy == ModelStrategy.CHAT:
+        elif strategy == ModelStrategy.CHAT:
 
-        models = self.models
+            models = self.models
 
-    else:
+        else:
 
-        models = self.models
+            models = self.models
 
-    if not models:
-        return None
+        if not models:
 
-    models = sorted(
-        models,
-        key=lambda model: (
-            not getattr(model, "free", True),
-            -(getattr(model, "context", 0) or 0),
-            getattr(model, "name", "").lower(),
-        ),
-    )
+            return None
 
-    return models[0]
-     
+        models = sorted(
+
+            models,
+
+            key=lambda model: (
+
+                not getattr(model, "free", True),
+
+                -(getattr(model, "context", 0) or 0),
+
+                getattr(model, "name", "").lower(),
+
+            )
+
+        )
+
+        return models[0]
+
     # --------------------------------------------------
 
     def best_chat(self):
