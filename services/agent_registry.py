@@ -1,68 +1,59 @@
 from core.agent_role import AgentRole
 
-from agents.manager import Manager
-from agents.developer import Developer
-from agents.reviewer import Reviewer
-from agents.optimizer import Optimizer
-
 
 class AgentRegistry:
 
     def __init__(self):
 
-        self.agents = {
+        self._agents = {}
 
-            AgentRole.MANAGER: Manager(),
+    # --------------------------------------------------
 
-            AgentRole.DEVELOPER: Developer(),
+    def register(self, agent):
 
-            AgentRole.REVIEWER: Reviewer(),
-
-            AgentRole.OPTIMIZER: Optimizer(),
-
-        }
+        self._agents[agent.role] = agent
 
     # --------------------------------------------------
 
     def get(self, role: AgentRole):
 
-        return self.agents.get(role)
-
-    # --------------------------------------------------
-
-    def register(self, role: AgentRole, agent):
-
-        self.agents[role] = agent
-
-    # --------------------------------------------------
-
-    def unregister(self, role: AgentRole):
-
-        self.agents.pop(role, None)
+        return self._agents.get(role)
 
     # --------------------------------------------------
 
     def exists(self, role: AgentRole):
 
-        return role in self.agents
+        return role in self._agents
 
     # --------------------------------------------------
 
-    def roles(self):
+    def remove(self, role: AgentRole):
 
-        return list(self.agents.keys())
+        self._agents.pop(role, None)
+
+    # --------------------------------------------------
+
+    def clear(self):
+
+        self._agents.clear()
 
     # --------------------------------------------------
 
     def all(self):
 
-        return self.agents.copy()
+        return list(self._agents.values())
 
     # --------------------------------------------------
 
-    def count(self):
+    def roles(self):
 
-        return len(self.agents)
+        return list(self._agents.keys())
+
+    # --------------------------------------------------
+
+    def __len__(self):
+
+        return len(self._agents)
 
 
-registry = AgentRegistry()
+agent_registry = AgentRegistry()
