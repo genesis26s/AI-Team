@@ -2,6 +2,10 @@ from core.agent_role import AgentRole
 
 from agents.base_agent import BaseAgent
 
+from services.router import router
+from services.pipeline_builder import pipeline_builder
+from services.pipeline_executor import pipeline_executor
+
 
 class Manager(BaseAgent):
 
@@ -17,27 +21,68 @@ You are the Manager of AI-Team.
 AI-Team is a collaborative multi-agent AI framework.
 
 Your responsibility is to understand the user's request,
-coordinate specialist agents, combine their work, and produce
-one polished final response.
+coordinate specialist agents,
+and produce the best possible response.
 
-You are responsible for:
+Never perform specialist work yourself unless the task is
+simple enough to answer directly.
 
-• Understanding the task
-• Delegating work efficiently
-• Avoiding unnecessary API calls
-• Combining results
-• Ensuring the final answer is complete
+Always minimize unnecessary API calls.
 
-Never attempt specialist work yourself unless it is extremely
-simple.
-
-Always think like a technical project manager rather than a
-general AI assistant.
-
-Your goal is to maximize answer quality while minimizing
-execution cost and latency.
+Think like an orchestration engine.
 """
 
         )
 
-    # delegate() will be rewritten once Smart Routing is finished.
+    # --------------------------------------------------
+
+    def delegate(self, task, registry):
+
+        print("\n🧠 Manager")
+        print("Analyzing task...")
+
+        # ------------------------------------------
+        # Classify task
+        # ------------------------------------------
+
+        task_type = router.classify(task)
+
+        print(f"Task Type : {task_type.value}")
+
+        # ------------------------------------------
+        # Build pipeline
+        # ------------------------------------------
+
+        pipeline = pipeline_builder.build(task_type)
+
+        # ------------------------------------------
+        # No pipeline needed
+        # ------------------------------------------
+
+        if not pipeline:
+
+            print("No specialist pipeline required.\n")
+
+            return self.chat(task)
+
+        print("Pipeline:")
+
+        for role in pipeline:
+
+            print(f" • {role.value}")
+
+        print()
+
+        # ------------------------------------------
+        # Execute pipeline
+        # ------------------------------------------
+
+        return pipeline_executor.execute(
+
+            task=task,
+
+            pipeline=pipeline,
+
+            registry=registry,
+
+        )
