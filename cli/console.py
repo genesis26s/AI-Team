@@ -2,7 +2,7 @@ from cli.banner import Banner
 from cli.parser import parser
 from cli.command_handler import handler
 
-from services.agent_registry import registry
+from services.agent_registry import agent_registry
 
 from core.agent_role import AgentRole
 from core.task import Task
