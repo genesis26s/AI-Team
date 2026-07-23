@@ -7,6 +7,8 @@ from services.agent_registry import agent_registry
 from core.agent_role import AgentRole
 from core.task import Task
 
+import traceback
+
 
 class Console:
     """
@@ -20,7 +22,7 @@ class Console:
 
     def get_manager(self):
 
-        manager = registry.get(AgentRole.MANAGER)
+        manager = agent_registry.get(AgentRole.MANAGER)
 
         if manager is None:
 
@@ -74,13 +76,11 @@ class Console:
                 # ------------------------------------------
 
                 task = Task(
-
                     prompt=parsed["input"]
-
                 )
 
                 # ------------------------------------------
-                # Get current manager
+                # Get Manager
                 # ------------------------------------------
 
                 manager = self.get_manager()
@@ -89,13 +89,7 @@ class Console:
                 # Delegate
                 # ------------------------------------------
 
-                response = manager.delegate(
-
-                    task,
-
-                    registry,
-
-                )
+                response = manager.delegate(task)
 
                 # ------------------------------------------
                 # Output
@@ -117,9 +111,9 @@ class Console:
 
                 break
 
-            except Exception as e:
+            except Exception:
 
-                print(f"\nError: {e}\n")
+                traceback.print_exc()
 
 
 console = Console()
