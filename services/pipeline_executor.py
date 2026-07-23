@@ -1,49 +1,54 @@
-from core.agent_role import AgentRole
+from core.execution_plan import ExecutionPlan
+
+from services.agent_registry import agent_registry
 
 
 class PipelineExecutor:
 
     """
-    Executes an agent pipeline.
+    Executes an ExecutionPlan.
 
-    Responsible ONLY for running agents
-    in the correct order.
+    It NEVER decides which agents to use.
+
+    It ONLY executes the pipeline produced
+    by the Planning Engine.
     """
 
-    def execute(
-        self,
-        task,
-        pipeline,
-        registry,
-    ):
+    def execute(self, plan: ExecutionPlan, task):
 
-        current_input = task
+        current_output = task.prompt
 
-        final_response = None
+        print("\nPipeline")
 
-        for role in pipeline:
+        if not plan.pipeline:
 
-            agent = registry.get(role)
+            print("  (empty)")
+
+            return None
+
+        for role in plan.pipeline:
+
+            print(f"• {role.value.title()}")
+
+            agent = agent_registry.get(role)
 
             if agent is None:
 
-                print(f"Skipping {role.value} (not registered).")
+                raise RuntimeError(
 
-                continue
+                    f"Agent '{role.value}' is not registered."
 
-            response = agent.chat(current_input)
+                )
 
-            print(f"✓ {role.value.title()} finished")
+            response = agent.chat(current_output)
 
             if not response.success:
 
                 return response
 
-            current_input = response.text
+            current_output = response.text
 
-            final_response = response
-
-        return final_response
+        return response
 
 
 pipeline_executor = PipelineExecutor()
