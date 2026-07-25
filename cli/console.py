@@ -101,7 +101,7 @@ class Console:
                 print("=" * 50)
                 print()
 
-                print(response)
+                print(response.text)
 
                 print()
 
