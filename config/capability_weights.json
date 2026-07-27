@@ -1,1 +1,35 @@
- 
+ {
+    "global": {
+        "reasoning": 22,
+        "coding": 20,
+        "instruction": 15,
+        "research": 12,
+        "context": 10,
+        "math": 8,
+        "writing": 5,
+        "speed": 4,
+        "creativity": 2,
+        "vision": 2
+    },
+
+    "developer": {
+        "coding": 35,
+        "reasoning": 25,
+        "instruction": 15,
+        "context": 12,
+        "math": 8,
+        "research": 3,
+        "writing": 1,
+        "speed": 1
+    },
+
+    "planner": {
+        "reasoning": 35,
+        "instruction": 25,
+        "research": 15,
+        "context": 15,
+        "writing": 5,
+        "math": 3,
+        "coding": 2
+    }
+}
